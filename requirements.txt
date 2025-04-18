@@ -1,0 +1,13 @@
+#   requirements.txt
+numpy
+pandas
+matplotlib
+scipy
+seaborn
+librosa
+SpeechRecognition
+scikit-learn
+fastapi
+uvicorn
+python-multipart
+pydub==0.25.1

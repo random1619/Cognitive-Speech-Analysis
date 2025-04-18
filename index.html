@@ -1,0 +1,332 @@
+#   index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Speech Analysis</title>
+    <link href="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css)" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            padding-top: 20px;
+        }
+        .container {
+            max-width: 900px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #0d6efd;
+            margin-bottom: 20px;
+        }
+        .upload-area {
+            border: 2px dashed #0d6efd;
+            border-radius: 5px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            background-color: #e9ecef;
+        }
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .visualization {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+        }
+        .file-item {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .stress-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .normal {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .elevated, .high {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .low {
+            background-color: #3498db;
+            color: white;
+        }
+        .moderate {
+            background-color: #f39c12;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Cognitive Speech Analysis</h1>
+        <p class="lead text-center">Upload multiple audio files to analyze speech patterns and perform comparative analysis</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <img src="[https://cdn-icons-png.flaticon.com/512/2088/2088474.png](https://cdn-icons-png.flaticon.com/512/2088/2088474.png)" width="64" height="64" alt="Upload">
+            <h5 class="mt-3">Drag & drop your audio files here</h5>
+            <p>or</p>
+            <input type="file" id="fileInput" accept="audio/*" multiple class="d-none">
+            <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">Select Files</button>
+            <p class="text-muted mt-2">Select at least 2 files for comparative analysis</p>
+        </div>
+        
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Analyzing audio files... This may take a minute.</p>
+        </div>
+        
+        <div class="results" id="resultsContainer">
+            <h3 class="mb-4">Analysis Results</h3>
+            
+            <ul class="nav nav-tabs" id="resultTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="comparison-tab" data-bs-toggle="tab" data-bs-target="#comparison" type="button" role="tab" aria-controls="comparison" aria-selected="true">Comparative Analysis</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="individual-tab" data-bs-toggle="tab" data-bs-target="#individual" type="button" role="tab" aria-controls="individual" aria-selected="false">Individual Files</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="resultTabsContent">
+                <div class="tab-pane fade show active" id="comparison" role="tabpanel" aria-labelledby="comparison-tab">
+                    <div class="row mt-4">
+                        <div class="col-md-12 mb-4">
+                            <h4>Cluster Analysis</h4>
+                            <img id="clusterPlot" class="visualization img-fluid" alt="Cluster Analysis">
+                            <p class="text-muted">This visualization shows how speech samples group together based on similar patterns.</p>
+                        </div>
+                        
+                        <div class="col-md-12 mb-4">
+                            <h4>Risk Assessment</h4>
+                            <img id="riskPlot" class="visualization img-fluid" alt="Risk Assessment">
+                            <p class="text-muted">This visualization highlights potential outliers or concerning speech patterns.</p>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <h4>Insights</h4>
+                            <div id="insightsContent"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="individual" role="tabpanel" aria-labelledby="individual-tab">
+                    <div id="individualFiles" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js)"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Change this line in your index.html file
+            const apiUrl = '/analyze-audio/';
+
+            
+            // Elements
+            const fileInput = document.getElementById('fileInput');
+            const uploadArea = document.getElementById('uploadArea');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            // Handle file selection
+            fileInput.addEventListener('change', handleFilesUpload);
+            
+            // Handle drag and drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('bg-light');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('bg-light');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('bg-light');
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFilesUpload();
+                }
+            });
+            
+            function handleFilesUpload() {
+                if (!fileInput.files.length) return;
+                
+                // Validate file types
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    const file = fileInput.files[i];
+                    if (!file.type.startsWith('audio/')) {
+                        alert('Please select only audio files.');
+                        return;
+                    }
+                }
+                
+                // Show loading indicator
+                uploadArea.style.display = 'none';
+                loadingIndicator.style.display = 'block';
+                resultsContainer.style.display = 'none';
+                
+                // Create form data
+                const formData = new FormData();
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    formData.append('files', fileInput.files[i]);
+                }
+                
+                // Send to API
+                fetch(apiUrl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Analysis failed. Please try again.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displayResults(data);
+                })
+                .catch(error => {
+                    alert(error.message);
+                    // Reset UI
+                    uploadArea.style.display = 'block';
+                    loadingIndicator.style.display = 'none';
+                });
+            }
+            
+            function displayResults(data) {
+                // Hide loading, show results
+                loadingIndicator.style.display = 'none';
+                resultsContainer.style.display = 'block';
+                
+                // Display visualizations
+                if (data.comparative_analysis && data.comparative_analysis.visualizations) {
+                    document.getElementById('clusterPlot').src = `data:image/png;base64,${data.comparative_analysis.visualizations.cluster_plot}`;
+                    document.getElementById('riskPlot').src = `data:image/png;base64,${data.comparative_analysis.visualizations.risk_plot}`;
+                }
+                
+                // Display insights
+                const insightsContent = document.getElementById('insightsContent');
+                insightsContent.innerHTML = '';
+                
+                if (data.comparative_analysis && data.comparative_analysis.insights) {
+                    const insights = data.comparative_analysis.insights;
+                    
+                    // Summary
+                    const summaryDiv = document.createElement('div');
+                    summaryDiv.innerHTML = `
+                        <h5>Summary</h5>
+                        <p>Total samples: ${insights.summary.total_samples}</p>
+                        <p>Clusters found: ${insights.summary.clusters_found}</p>
+                    `;
+                    insightsContent.appendChild(summaryDiv);
+                    
+                    // Recommendations
+                    if (insights.recommendations && insights.recommendations.length > 0) {
+                        const recsDiv = document.createElement('div');
+                        recsDiv.innerHTML = '<h5>Recommendations</h5>';
+                        const recsList = document.createElement('ul');
+                        
+                        insights.recommendations.forEach(rec => {
+                            const item = document.createElement('li');
+                            item.textContent = rec;
+                            recsList.appendChild(item);
+                        });
+                        
+                        recsDiv.appendChild(recsList);
+                        insightsContent.appendChild(recsDiv);
+                    }
+                    
+                    // Clusters
+                    if (insights.clusters) {
+                        const clustersDiv = document.createElement('div');
+                        clustersDiv.innerHTML = '<h5>Cluster Analysis</h5>';
+                        
+                        for (const [clusterName, clusterInfo] of Object.entries(insights.clusters)) {
+                            const clusterDiv = document.createElement('div');
+                            clusterDiv.className = 'mb-3';
+                            clusterDiv.innerHTML = `
+                                <h6>${clusterName.replace('_', ' ')}</h6>
+                                <p>Size: ${clusterInfo.size} (${clusterInfo.percentage}%)</p>
+                                <p>${clusterInfo.interpretation}</p>
+                            `;
+                            clustersDiv.appendChild(clusterDiv);
+                        }
+                        
+                        insightsContent.appendChild(clustersDiv);
+                    }
+                }
+                
+                // Display individual file details
+                const individualFiles = document.getElementById('individualFiles');
+                individualFiles.innerHTML = '';
+                
+                if (data.file_details) {
+                    for (const [filename, fileData] of Object.entries(data.file_details)) {
+                        const fileDiv = document.createElement('div');
+                        fileDiv.className = 'file-item';
+                        
+                        // Create stress indicators HTML
+                        let stressIndicatorsHtml = '';
+                        for (const [key, value] of Object.entries(fileData.stress_indicators)) {
+                            const formattedKey = key.replace(/_/g, ' ')
+                                .split(' ')
+                                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                .join(' ');
+                            
+                            stressIndicatorsHtml += `
+                                <div class="stress-indicator ${value.toLowerCase()}">
+                                    ${formattedKey}: ${value}
+                                </div>
+                            `;
+                        }
+                        
+                        fileDiv.innerHTML = `
+                            <h5>${filename}</h5>
+                            <p><strong>Transcription:</strong> ${fileData.transcribed_text || 'No transcription available'}</p>
+                            <p><strong>Stress Assessment:</strong> <span class="stress-indicator ${fileData.stress_assessment.toLowerCase()}">${fileData.stress_assessment}</span></p>
+                            <div class="mb-3">
+                                <strong>Stress Indicators:</strong><br>
+                                ${stressIndicatorsHtml}
+                            </div>
+                            <p><strong>Cluster:</strong> ${data.comparative_analysis.clusters[Object.keys(data.file_details).indexOf(filename)]}</p>
+                        `;
+                        
+                        individualFiles.appendChild(fileDiv);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
