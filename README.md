@@ -1,6 +1,6 @@
 
 # 🧠 Cognitive Speech Analysis System (2025)
-
+Deployed Using Google Cloud
 This system provides advanced cognitive load and disfluency detection through speech. It integrates **acoustic signal processing**, **linguistic analysis**, and **machine learning** to offer clinically actionable insights into cognitive health.
 
 ## 🚀 Live Demo
