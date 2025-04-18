@@ -1,33 +1,87 @@
-
 # 🧠 Cognitive Speech Analysis System (2025)
-Deployed Using Google Cloud
-This system provides advanced cognitive load and disfluency detection through speech. It integrates **acoustic signal processing**, **linguistic analysis**, and **machine learning** to offer clinically actionable insights into cognitive health.
+
+Deployed Using **Google Cloud Run**  
+This system delivers advanced **cognitive load** and **disfluency detection** from speech, leveraging **acoustic signal processing**, **linguistic analysis**, and **machine learning** to offer clinically actionable insights.
+
+---
 
 ## 🚀 Live Demo
 
 **API Endpoint:**  
-[https://cognitive-speech-api-212871258114.us-central1.run.app/](https://cognitive-speech-api-212871258114.us-central1.run.app/)
+[https://cognitive-speech-api-212871258114.us-central1.run.app/analyze-audio/](https://cognitive-speech-api-212871258114.us-central1.run.app/analyze-audio/)
+
+---
+
+## 🔬 How to Test the API Using Postman
+
+### 1. Launch Postman and Create a Request
+
+- Open **Postman**
+- Click **New > Request**
+- Name the request (e.g., `Analyze Audio`) and save to a collection
+
+### 2. Set Up the Request
+
+- **Method:** `POST`
+- **URL:**  
+  ```
+  https://cognitive-speech-api-212871258114.us-central1.run.app/analyze-audio/
+  ```
+
+### 3. Configure the Request Body
+
+- Navigate to the **Body** tab
+- Select **form-data**
+- Add the following keys:
+
+| Key              | Type   | Value                         |
+|------------------|--------|-------------------------------|
+| `files`          | File   | (Upload `.wav`, `.mp3`, etc.) |
+| `generate_report`| Text   | `true` *(optional)*           |
+
+### 4. Set Headers *(Optional)*
+
+- `Content-Type`: Automatically set to `multipart/form-data`
+- If authentication is enabled:
+  ```
+  Authorization: Bearer <your_token>
+  ```
+
+### 5. Send the Request
+
+- Click **Send**
+- View JSON response or report output
+
+---
+
+## ⚡ Quick Test via Command Line (cURL)
+
+```bash
+curl -X POST https://cognitive-speech-api-212871258114.us-central1.run.app/analyze-audio/ ^
+  -H "Content-Type: multipart/form-data" ^
+  -F "files=@C:\path\to\your\audiofile.wav" ^
+  -F "generate_report=true"
+```
+
+> On macOS/Linux, use `\` instead of `^`. Replace the file path accordingly.
 
 ---
 
 ## 📦 Core Components Breakdown
 
-### 1. 🎧 Audio Processing Pipeline
+### 🎧 Audio Processing Pipeline
 
 **Technologies:** `Librosa`, `NumPy`
 
-#### 📈 Process Flow
-- **Audio Loading**:  
+**Process Flow:**
+- **Audio Loading:**  
   - 48kHz sampling  
   - Mono channel  
-
-- **Acoustic Feature Extraction**:
-  - **Pitch Analysis**: 75–500 Hz range detection
-  - **Energy Dynamics**: RMS energy calculated using 512-sample frames
-  - **Spectral Features**: MFCCs (13 coefficients)
-  - **Pause Detection**: Threshold set at ≥0.2s
-
-#### 🧠 Technical Insight
+- **Acoustic Feature Extraction:**
+  - **Pitch Analysis:** 75–500 Hz
+  - **Energy Dynamics:** RMS energy with 512-sample frames
+  - **Spectral Features:** 13 MFCCs
+  - **Pause Detection:** ≥0.2s
 
 ```python
 # Sample Feature Extraction
@@ -37,42 +91,34 @@ significant_pitches = pitches[magnitudes > np.median(magnitudes)]
 
 ---
 
-### 2. 🗣️ Linguistic Analysis Engine
+### 🗣️ Linguistic Analysis Engine
 
 **Technologies:** `NLTK`, `WordNet`
 
-#### 🧪 Analysis Layers
-
-- **Lexical Complexity**
+**Analysis Layers:**
+- **Lexical Complexity:**
   - Type-Token Ratio (TTR)
-  - Average Word Length: baseline 4.7 characters
-
-- **Disfluency Detection**
-  - Filler Word Detection (≥0.8s pause)
-  - Incomplete Sentence Detection
-
-- **Semantic Analysis**
-  - Word Substitution Detection: WordNet similarity < 0.1
-
-- **Cognitive Indicators**
-  - Hesitation rate > 0.15 per sentence
-  - Word substitution rate > 10%
+  - Avg. Word Length baseline: 4.7 chars
+- **Disfluency Detection:**
+  - Filler word detection (≥0.8s pause)
+  - Incomplete sentence detection
+- **Semantic Analysis:**
+  - WordNet similarity < 0.1 → substitution
+- **Cognitive Indicators:**
+  - Hesitation rate > 0.15/sentence
+  - Substitution rate > 10%
 
 ---
 
 ## 🤖 Machine Learning Architecture
 
-### 1. 🔵 Clustering Module
+### 🔵 Clustering Module
 
-**Algorithm:** K-Means  
-**Techniques:** Silhouette Score, PCA (2D)
-
-#### ⚙️ Technical Specs
-- Automatic Cluster Selection: 2–5 clusters
-- PCA for 2D reduction
-- Z-score normalization
-
-#### 🧠 Cluster Interpretation
+- **Algorithm:** K-Means
+- **Techniques:** Silhouette Score, PCA (2D)
+- **Specs:**
+  - Auto cluster selection: 2–5
+  - Z-score normalization
 
 ```python
 # Feature Significance
@@ -84,54 +130,53 @@ elif standardized_diff > 1.5:
 
 ---
 
-### 2. ⚠️ Risk Analysis System
+### ⚠️ Risk Analysis System
 
-**Components:**
-- Isolation Forest (`contamination = 10%`)
-- Z-score Outlier Detection (`threshold > 3σ`)
-- Dynamic PCA Visualization
+- **Isolation Forest:** contamination = 10%
+- **Z-Score Detection:** threshold > 3σ
+- **Dynamic PCA Visualization**
 
-#### 🟡 Risk Thresholds
-- **High Risk:** 3+ abnormal features
-- **Moderate Risk:** 1–2 abnormal features
+**Risk Thresholds:**
+- High Risk: 3+ abnormal features
+- Moderate Risk: 1–2 abnormal features
 
 ---
 
 ## 📊 Insights Generation
 
-### 🧮 1. Cognitive Indicators Matrix
+### 🧮 Cognitive Indicators Matrix
 
-| **Indicator**         | **Normal Range**      | **Elevated**             |
-|------------------------|------------------------|--------------------------|
-| Speech Rate           | 2.5–3.5 words/sec      | > 4.0 words/sec          |
-| Pitch Variability     | 50–150Hz std           | > 200Hz std              |
-| Pause Frequency       | 0.8–1.2/sentence       | > 2.0/sentence           |
-
----
-
-### 📄 2. Clinical Report Structure
-
-#### **Section 1: Feature Significance**
-- Top 3 distinctive features per cluster
-- Deviation from population mean (Z-score)
-
-#### **Section 2: Risk Profile**
-- Risk Level Classification (High / Moderate / Low)
-- Temporal Pattern Analysis
-
-#### **Section 3: Intervention Recommendations**
-- Speech therapy suggestions
-- Cognitive load reduction strategies
+| **Indicator**       | **Normal Range**      | **Elevated**            |
+|---------------------|------------------------|--------------------------|
+| Speech Rate         | 2.5–3.5 words/sec      | > 4.0 words/sec          |
+| Pitch Variability   | 50–150Hz std           | > 200Hz std              |
+| Pause Frequency     | 0.8–1.2/sentence       | > 2.0/sentence           |
 
 ---
 
-## 📤 Output System
+### 📄 Clinical Report Structure
 
-### 1. 📈 Visualization Pipeline
+**Section 1: Feature Significance**  
+- Top 3 features per cluster  
+- Z-score deviation from mean  
 
-- **Cluster Plot**: 2D PCA projection w/ labels
-- **Risk Map**: Heatmap of feature deviations
-- **Temporal Trends**: Pitch and energy over time
+**Section 2: Risk Profile**  
+- Risk Level: High / Moderate / Low  
+- Temporal pattern deviations  
+
+**Section 3: Recommendations**  
+- Speech therapy prompts  
+- Cognitive load reduction strategies  
+
+---
+
+## 📤 Output Format
+
+### 1. 📈 Visualizations
+
+- **Cluster Plot:** PCA 2D scatter
+- **Risk Map:** Feature heatmap
+- **Temporal Trends:** Pitch & energy over time
 
 ### 2. 🧾 JSON Response Example
 
@@ -157,7 +202,7 @@ elif standardized_diff > 1.5:
 
 ## ⚙️ Technical Considerations
 
-### 🚄 Performance Optimization
+### 🚄 Performance Targets
 
 | Constraint               | Target                          |
 |--------------------------|----------------------------------|
@@ -165,63 +210,49 @@ elif standardized_diff > 1.5:
 | Memory Usage             | ≤ 512MB                         |
 | Concurrent Requests      | Up to 50 simultaneous requests  |
 
----
-
 ### 🛠️ Error Handling
 
-- **Audio Validation**:
-  - Format, duration (5–300s), sample rate (≥16kHz)
-- **Fallbacks**:
-  - Null-safe data access
-  - Graceful degradation if data missing
+- **Audio Validation:** format, duration (5–300s), sample rate ≥ 16kHz  
+- **Fallbacks:** null-safe access, graceful degradation  
+
+### 🔐 Security
+
+- Audio Sanitization  
+- TLS 1.3 Encryption  
+- JWT-based Authentication  
 
 ---
 
-### 🔐 Security Features
+## 🧪 Clinical Validation
 
-- **Audio Sanitization**
-- **TLS 1.3 Encryption**
-- **JWT-based Authentication**
+**Dataset:** 1,200 clinical samples (Mayo Clinic)
 
----
-
-## 🧪 Clinical Validation Metrics
-
-Based on **1,200 clinical samples** from the **Mayo Clinic dataset**.
-
-| Metric                 | Accuracy | F1-Score |
-|------------------------|----------|----------|
-| Cognitive Load         | 87.2%    | 0.85     |
-| Word Recall Issues     | 79.8%    | 0.76     |
-| Stress Detection       | 82.4%    | 0.81     |
+| Metric               | Accuracy | F1-Score |
+|----------------------|----------|----------|
+| Cognitive Load       | 87.2%    | 0.85     |
+| Word Recall Issues   | 79.8%    | 0.76     |
+| Stress Detection     | 82.4%    | 0.81     |
 
 ---
 
-## 📌 Project Status
+## 🧰 Setup (Coming Soon)
 
-✅ Feature Complete  
-🧪 Clinically Validated  
-🛡️ Secure & Scalable  
+> Docker setup and REST client CLI to be released
 
 ---
 
 ## 👩‍⚕️ Suggested Use Cases
 
-- Cognitive health screening tools  
-- Remote speech therapy support  
-- Elderly care cognitive monitoring  
-- AI-assisted clinical diagnostics  
-
----
-
-## 🛠️ Setup (Coming Soon)
-
-*To be released with Docker + REST client instructions.*
+- Remote cognitive health screening  
+- Speech therapy assistance tools  
+- Elderly care monitoring systems  
+- AI-powered clinical diagnostics  
 
 ---
 
 ## 📧 Contact
 
-For API access, enterprise support, or clinical integration inquiries, contact **[your.email@domain.com]**.
+For access, partnerships, or integration help, email:  
+**[random16196174@gmail.com]**
+** Author - Gagandeep Singh **
 
----
